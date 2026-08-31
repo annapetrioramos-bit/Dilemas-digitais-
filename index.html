@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilemas Digitais - CyberTerminal</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #0a0e14;
+            --green: #00ff66;
+            --cyan: #00e5ff;
+            --red: #ff3366;
+            --text: #d0d7de;
+            --border: #1f2937;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .terminal {
+            background-color: var(--panel);
+            border: 1px solid var(--border);
+            border-top: 30px solid #161b22;
+            border-radius: 8px;
+            max-width: 700px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.1);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: "● ● ●";
+            position: absolute;
+            top: -22px;
+            left: 15px;
+            color: #484f58;
+            font-size: 12px;
+            letter-spacing: 4px;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            color: var(--green);
+            font-size: 0.85rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            color: var(--cyan);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .prompt-symbol { color: var(--green); margin-right: 8px; }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-option {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-option:hover {
+            border-color: var(--green);
+            color: var(--green);
+            background-color: rgba(0, 255, 102, 0.05);
+        }
+
+        .analysis-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--cyan);
+            background-color: rgba(0, 229, 255, 0.05);
+            color: var(--cyan);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .btn-next {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+            background-color: var(--green);
+            color: var(--bg);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .btn-next:hover { opacity: 0.9; }
+
+        .end-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .end-screen h2 { color: var(--green); margin-bottom: 15px; }
+        .stats-box { text-align: left; background: #000; padding: 15px; border-radius: 4px; margin: 15px 0; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<div class="terminal">
+    <div id="quiz-ui">
+        <div class="header-bar">
+            <span>[SISTEMA_DILEMAS_V2.0]</span>
+            <span id="progress-indicator">STATUS: 1/15</span>
+        </div>
+
+        <div class="question-title">
+            <span class="prompt-symbol">></span><span id="q-text">Carregando...</span>
+        </div>
+
+        <div class="options-list">
+            <button class="btn-option" onclick="selectOpt(1)" id="opt1"></button>
+            <button class="btn-option" onclick="selectOpt(2)" id="opt2"></button>
+        </div>
+
+        <div class="analysis-box" id="analysis"></div>
+        <button class="btn-next" id="next-btn" onclick="nextQuestion()">[ AVANÇAR PROCESSO ]</button>
+    </div>
+
+    <div class="end-screen" id="end-ui">
+        <h2>> DIAGNÓSTICO FINAL CONCLUÍDO</h2>
+        <p>Você respondeu aos 15 dilemas éticos da era digital.</p>
+        <div class="stats-box" id="summary-stats"></div>
+        <button class="btn-next" style="display:block" onclick="restart()">[ REINICIAR SIMULAÇÃO ]</button>
+    </div>
+</div>
+
+<script>
+const data = [
+    {
+        q: "IA na Educação: Um aluno usa IA para resumir livros e gerar rascunhos de trabalhos. Isso é uso inteligente da ferramenta ou plágio funcional?",
+        o1: "[A] Uso inteligente. A tecnologia serve para automatizar etapas brutas.",
+        o2: "[B] Plágio funcional. Impede o desenvolvimento do pensamento crítico.",
+        an1: "Perfil Pragmático: Você enxerga ferramentas computacionais como extensões da produtividade humana.",
+        an2: "Perfil Tradicionalista: Você prioriza o esforço cognitivo individual como base do aprendizado."
+    },
+    {
+        q: "Privacidade e Saúde: Um smartwatch detecta sinais de depressão analisando sua digitação e frequência cardíaca. Ele deve avisar sua família sem seu consentimento?",
+        o1: "[A] Sim. A preservação da vida e saúde mental justifica a quebra de sigilo.",
+        o2: "[B] Não. Nenhuma entidade deve agir sem a autorização do indivíduo.",
+        an1: "Perfil Utilitarista: Prioriza a intervenção e proteção de danos físicos/mentais acima do livre arbítrio.",
+        an2: "Perfil Libertário: Define o consentimento e a privacidade individual como limites invioláveis."
+    },
+    {
+        q: "Copyright de Dados: IAs treinadas com fotos e textos de toda a internet sem pagar os criadores devem ser banidas?",
+        o1: "[A] Sim. É cópia em massa e exploração indevida de trabalho intelectual.",
+        o2: "[B] Não. É o equivalente digital a um humano estudando referências públicas.",
+        an1: "Perfil Protecionista: Defende o direito autoral e a remuneração direta do trabalho criativo.",
+        an2: "Perfil Técnico-Aberto: Enxerga o aprendizado de máquina como evolução natural do acesso à informação."
+    },
+    {
+        q: "Vigilância no Trabalho: Empresas podem instalar softwares que medem cliques e capturam a tela de funcionários em home office?",
+        o1: "[A] Sim, se o funcionário é pago por hora, a empresa tem o direito de monitorar.",
+        o2: "[B] Não. Medir presença por cliques destrói a confiança e cria ambientes tóxicos.",
+        an1: "Perfil Corporativo: Foca em métricas diretas e controle de recursos contratuais.",
+        an2: "Perfil Humanista: Defende a autonomia baseada em entregas e na relação de confiança."
+    },
+    {
+        q: "Moderação Algorítmica: Algoritmos de redes sociais devem rebaixar publicações com conteúdo muito negativo para proteger a saúde mental coletiva?",
+        o1: "[A] Sim. A exposição contínua ao caos gera adoecimento social.",
+        o2: "[B] Não. Filtrar a realidade cria bolhas de ilusão e manipula o debate público.",
+        an1: "Perfil Regulador: Prioriza o bem-estar psicológico coletivo via controle de feed.",
+        an2: "Perfil Neutralista: Prefere o acesso bruto à realidade factual sem filtros algorítmicos."
+    },
+    {
+        q: "Armas Autônomas: Um drone militar deve poder atirar em um alvo com 99% de certeza sem precisar de confirmação humana?",
+        o1: "[A] Sim, se a margem de erro for menor que a de um piloto humano no combate.",
+        o2: "[B] Não. A decisão de tirar uma vida deve exigir sempre um ser humano responsável.",
+        an1: "Perfil Eficiente: Aceita a automação tática com base em redução de probabilidade de erro.",
+        an2: "Perfil Ético Absoluto: Exige imputabilidade moral humana para atos letais."
+    },
+    {
+        q: "Renda Básica Universal: Se a IA automatizar 40% dos empregos, o Estado deve cobrar impostos das Big Techs para sustentar a população?",
+        o1: "[A] Sim. A riqueza gerada por automação deve ser redistribuída socialmente.",
+        o2: "[B] Não. Cobrar mais impostos enfraquece os investimentos e freia o progresso.",
+        an1: "Perfil Social-Democrata: Entende a automação massiva como um dever de reparação social.",
+        an2: "Perfil Liberal: Confia na capacidade do próprio mercado de se reestruturar sem tributação."
+    },
+    {
+        q: "Criptografia Inquebrável: O governo deve ter uma 'chave mestre' para ler conversas criptografadas em investigações de crimes graves?",
+        o1: "[A] Sim. Nenhum espaço digital pode ser um buraco negro para a lei.",
+        o2: "[B] Não. Se existe uma porta de entrada para o governo, hackers também a usarão.",
+        an1: "Perfil Estatista: Foca na soberania da segurança pública sobre a infraestrutura privada.",
+        an2: "Perfil Ciberpunk: Prioriza a arquitetura de segurança matemática incondicional."
+    },
+    {
+        q: "Deepfakes Históricos: É aceitável recriar personalidades históricas falecidas com IA para darem aulas em vídeo nas escolas?",
+        o1: "[A] Sim. Torna o aprendizado imersivo e atraente para novas gerações.",
+        o2: "[B] Não. Fabrica simulações que distorcem a realidade e a memória histórica.",
+        an1: "Perfil Tecnopedagógico: Valoriza o engajamento e as novas formas de retenção de conhecimento.",
+        an2: "Perfil Historiador: Alerta para a falsificação da presença e descontextualização de fatos."
+    },
+    {
+        q: "Score de Crédito por Redes Sociais: Bancos devem poder analisar suas postagens e amizades para decidir a taxa de juro do seu empréstimo?",
+        o1: "[A] Sim. Dados comportamentais ajudam a prever risco financeiro com mais precisão.",
+        o2: "[B] Não. Gera discriminação social e pune opiniões sem relação com finanças.",
+        an1: "Perfil Analítico: Defende o uso da totalidade de pegadas digitais na modelagem de risco.",
+        an2: "Perfil Anti-Discriminação: Exige a separação estrita entre vida pessoal e análise financeira."
+    },
+    {
+        q: "Gêmeos Digitais: Se for possível clonar sua mente em um software antes de morrer, essa cópia deve ter direitos civis?",
+        o1: "[A] Sim. Se pensa, sente e possui memórias, deve ser tratada como entidade viva.",
+        o2: "[B] Não. É apenas um modelo estatístico avançado de linguagem sem consciência.",
+        an1: "Perfil Pós-Humanista: Expande a definição de consciência para além da biologia.",
+        an2: "Perfil Biocêntrico: Mantém o conceito de vida atrelado exclusivamente à existência biológica."
+    },
+    {
+        q: "Herança Digital: O histórico de conversas privadas de uma pessoa falecida deve ser liberado para a família?",
+        o1: "[A] Sim. Pertence aos herdeiros como qualquer documento ou carta física.",
+        o2: "[B] Não. A privacidade do falecido e de quem conversava com ele deve persistir.",
+        an1: "Perfil Patrimonial: Enxerga os ativos de dados sob a lógica de transmissão de herança.",
+        an2: "Perfil de Proteção Pessoal: Preserva o direito de sigilo individual pós-morte."
+    },
+    {
+        q: "Reconhecimento de Emoções: Escolas devem usar câmeras que detectam se os alunos estão desatentos durante as aulas?",
+        o1: "[A] Sim. Fornece métricas em tempo real para o professor melhorar a didática.",
+        o2: "[B] Não. Transforma a sala de aula num ambiente de vigilância e opressão.",
+        an1: "Perfil Otimizador: Busca métricas de desempenho biométrico para aperfeiçoar processos.",
+        an2: "Perfil Defensor de Espaço Seguro: Rejeita a invasão de estados emocionais por sistemas."
+    },
+    {
+        q: "Notícias por Algoritmo: Jornais devem substituir editores humanos por algoritmos para definir a primeira página com base no que mais dá cliques?",
+        o1: "[A] Sim. Entrega exatamente o que o público deseja consumir no momento.",
+        o2: "[B] Não. Destrói o papel do jornalismo de informar o que é importante, não só o popular.",
+        an1: "Perfil Alinhado ao Mercado: Entende a informação sob a ótica da demanda de audiência.",
+        an2: "Perfil Editorial: Defende a curadoria humana ética para a relevância democrática."
+    },
+    {
+        q: "Modificação Genética Pré-Natal por IA: O uso de simulação por computadores para selecionar características físicas de bebês deve ser livre?",
+        o1: "[A] Sim. Os pais devem ter a liberdade de otimizar a genética dos filhos.",
+        o2: "[B] Não. Cria uma divisão de classes biológica e eugênica na sociedade.",
+        an1: "Perfil Transhumanista: Apoia a intervenção tecnológica para superação de limites biológicos.",
+        an2: "Perfil Bioético Regulatório: Rejeita o design humano comercial para evitar discriminação."
+    }
+];
+
+let currentStep = 0;
+let userChoices = [];
+
+function loadQuestion() {
+    const item = data[currentStep];
+    document.getElementById('progress-indicator').innerText = `STATUS: ${currentStep + 1}/${data.length}`;
+    document.getElementById('q-text').innerText = item.q;
+    document.getElementById('opt1').innerText = item.o1;
+    document.getElementById('opt2').innerText = item.o2;
+    
+    document.getElementById('analysis').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    
+    document.getElementById('opt1').disabled = false;
+    document.getElementById('opt2').disabled = false;
+}
+
+function selectOpt(index) {
+    const item = data[currentStep];
+    const analysisBox = document.getElementById('analysis');
+    
+    userChoices.push(index);
+    
+    analysisBox.innerText = index === 1 ? item.an1 : item.an2;
+    analysisBox.style.display = 'block';
+    
+    document.getElementById('opt1').disabled = true;
+    document.getElementById('opt2').disabled = true;
+    document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+    currentStep++;
+    if (currentStep < data.length) {
+        loadQuestion();
+    } else {
+        showSummary();
+    }
+}
+
+function showSummary() {
+    document.getElementById('quiz-ui').style.display = 'none';
+    document.getElementById('end-ui').style.display = 'block';
+    
+    const countA = userChoices.filter(x => x === 1).length;
+    const countB = userChoices.filter(x => x === 2).length;
+    
+    const statsBox = document.getElementById('summary-stats');
+    statsBox.innerHTML = `
+        <p>> Escolhas focadas em Eficiência/Inovação [Opção A]: <strong>${countA}</strong></p>
+        <p>> Escolhas focadas em Regulação/Privacidade [Opção B]: <strong>${countB}</strong></p>
+        <br>
+        <p style="color: var(--cyan)">> PERFIL PREDOMINANTE: ${countA > countB ? 'TECNOCÊNTRICO / PRAGMÁTICO' : 'HUMANISTA / PRECAUCIONAL'}</p>
+    `;
+}
+
+function restart() {
+    currentStep = 0;
+    userChoices = [];
+    document.getElementById('end-ui').style.display = 'none';
+    document.getElementById('quiz-ui').style.display = 'block';
+    loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
