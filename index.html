@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilemas Digitais</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { color: #38bdf8; margin-bottom: 10px; }
+        p.description { color: #94a3b8; margin-bottom: 30px; }
+        .card {
+            background-color: #334155;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        button {
+            background-color: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex: 1;
+        }
+        button:hover { background-color: #7dd3fc; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #0f172a;
+            display: none;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dilemas Digitais</h1>
+    <p class="description">Escolha o seu reposicionamento diante das grandes questões da tecnologia.</p>
+
+    <div class="card">
+        <h2 id="dilemma-title">Carregando dilema...</h2>
+        <p id="dilemma-text"></p>
+        <div class="btn-container">
+            <button onclick="chooseOption('A')" id="btnA">Opção A</button>
+            <button onclick="chooseOption('B')" id="btnB">Opção B</button>
+        </div>
+    </div>
+
+    <div id="result" class="result">
+        <p id="feedback-text"></p>
+        <button onclick="nextDilemma()" style="margin-top: 10px; width: 100%;">Próximo Dilema</button>
+    </div>
+</div>
+
+<script>
+    const dilemmas = [
+        {
+            title: "1. Privacidade vs. Conveniência",
+            text: "Um aplicativo de mapas oferece navegação em tempo real gratuita, mas vende seu histórico de localização exato para anunciantes. Você continua usando?",
+            optA: "Sim, a conveniência compensa.",
+            optB: "Não, prefiro buscar alternativas privadas.",
+            feedbackA: "Você priorizou a utilidade prática. A maioria dos usuários toma essa decisão, o que impulsiona a economia baseada em dados.",
+            feedbackB: "Você priorizou sua privacidade digital. Isso exige mais esforço para encontrar ferramentas focadas em proteção de dados."
+        },
+        {
+            title: "2. Arte Humana vs. IA",
+            text: "Um algoritmo gera uma música perfeita baseada no seu gosto musical. Você pagaria para ir ao show de um avatar dessa IA?",
+            optA: "Sim, se a música for boa, não importa a origem.",
+            optB: "Não, prefiro valorizar a arte e a experiência humana.",
+            feedbackA: "Sua visão foca no produto final e no entretenimento, refletindo a crescente aceitação da automação criativa.",
+            feedbackB: "Você valoriza a conexão humana e a intenção por trás da arte, um ponto central nas discussões sobre direitos autorais e cultura."
+        }
+    ];
+
+    let currentIndex = 0;
+
+    function loadDilemma() {
+        document.getElementById('result').style.display = 'none';
+        const current = dilemmas[currentIndex];
+        document.getElementById('dilemma-title').innerText = current.title;
+        document.getElementById('dilemma-text').innerText = current.text;
+        document.getElementById('btnA').innerText = current.optA;
+        document.getElementById('btnB').innerText = current.optB;
+    }
+
+    function chooseOption(option) {
+        const current = dilemmas[currentIndex];
+        const resultDiv = document.getElementById('result');
+        const feedbackText = document.getElementById('feedback-text');
+
+        if (option === 'A') {
+            feedbackText.innerText = current.feedbackA;
+        } else {
+            feedbackText.innerText = current.feedbackB;
+        }
+
+        resultDiv.style.display = 'block';
+    }
+
+    function nextDilemma() {
+        currentIndex = (currentIndex + 1) % dilemmas.length;
+        loadDilemma();
+    }
+
+    loadDilemma();
+</script>
+
+</body>
+</html>
